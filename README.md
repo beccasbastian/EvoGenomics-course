@@ -1,1 +1,1 @@
-# EvoGenomics-course
+# EvoGenomics-course exercise
