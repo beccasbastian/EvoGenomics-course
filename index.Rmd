@@ -1,0 +1,21 @@
+---
+title: "Evolutionary Genomics & Bioinformatics"
+author: "Rebecca Sebastian"
+date: "9/2/2020"
+output: html_document
+bibliography: data/references.bib
+---
+
+
+![](images/507CD459-BCAD-4DD5-8B47-48E150DF2577_1_201_a.jpeg)
+
+[My GitHUb page](https://rebecca-sebastian.rstudio.cloud/dd56a83996664114a45a64b5e2293464/file_show?path=%2Fcloud%2Fproject%2FLab1_Rebecca+Sebastian.html)
+
+R Basics
+
+LAB 1: [Introduction to R](https://rebecca-sebastian.rstudio.cloud/dd56a83996664114a45a64b5e2293464/file_show?path=%2Fcloud%2Fproject%2FLab1_Rebecca+Sebastian.html)
+
+LAB 2: [GitHub and R Studio](https://rebecca-sebastian.rstudio.cloud/dd56a83996664114a45a64b5e2293464/file_show?path=%2Fcloud%2Fproject%2FLab-2.html)
+
+
+
