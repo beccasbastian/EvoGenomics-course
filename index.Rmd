@@ -17,5 +17,7 @@ LAB 1: [Introduction to R](https://rebecca-sebastian.rstudio.cloud/dd56a83996664
 
 LAB 2: [GitHub and R Studio](https://rebecca-sebastian.rstudio.cloud/dd56a83996664114a45a64b5e2293464/file_show?path=%2Fcloud%2Fproject%2FLab-2.html)
 
+Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
+# REFERENCES
 
