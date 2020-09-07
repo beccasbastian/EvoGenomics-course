@@ -6,8 +6,8 @@ output: html_document
 bibliography: data/references.bib
 ---
 
-
-![](images/507CD459-BCAD-4DD5-8B47-48E150DF2577_1_201_a.jpeg)
+Professor: Ah, oh, well, the Powerpuff Girls. Oh, let's see now, eight cups of sugar, a pinch of spice, one tablespoon of everything nice, and, now this one's important: accidentally add a drop of Chemical X. And voila! -- If only coding was that easy!
+![](images/Screen Shot 2020-08-29 at 9.00.36 PM.png)
 
 [My GitHUb page](https://rebecca-sebastian.rstudio.cloud/dd56a83996664114a45a64b5e2293464/file_show?path=%2Fcloud%2Fproject%2FLab1_Rebecca+Sebastian.html)
 
