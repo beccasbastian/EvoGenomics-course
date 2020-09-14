@@ -13,10 +13,13 @@ Professor: Ah, oh, well, the Powerpuff Girls. Oh, let's see now, eight cups of s
 
 R Basics
 
-LAB 1: [Introduction to R](https://rebecca-sebastian.rstudio.cloud/dd56a83996664114a45a64b5e2293464/file_show?path=%2Fcloud%2Fproject%2FLab1_Rebecca+Sebastian.html)
+LAB 1: [Introduction to R](Lab1_Rebecca Sebastian.html)
 
-LAB 2: [GitHub and R Studio](https://rebecca-sebastian.rstudio.cloud/dd56a83996664114a45a64b5e2293464/file_show?path=%2Fcloud%2Fproject%2FLab-2.html)
+LAB 2: [GitHub and R Studio](Lab-2.html)
 
+LAB 3A: [Starting with Data](Lab_3a.html)
+
+LAB 3B: [Manipulating Data](Lab_3B.html)
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
 # REFERENCES
