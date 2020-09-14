@@ -17,9 +17,10 @@ LAB 1: [Introduction to R](Lab1_Rebecca Sebastian.html)
 
 LAB 2: [GitHub and R Studio](Lab-2.html)
 
-LAB 3A: [Starting with Data](Lab_3a.html)
+LAB 3A: [Starting with Data](lab_3a.html)
 
 LAB 3B: [Manipulating Data](Lab_3B.html)
+
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
 # REFERENCES
