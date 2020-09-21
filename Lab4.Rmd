@@ -1,0 +1,125 @@
+---
+title: "Lab4"
+author: "Rebecca. Sebastian"
+date: "9/21/2020"
+output: html_document
+---
+
+
+```{r}
+#Lab 4- Data Wrangling Part 1
+
+library(tidyverse)
+library(DT)
+library(ggplot2)
+
+
+report_03_11_2020 <- read.csv("~/Desktop/EvoGenomics-course/data/report_03_11_2020")
+
+datatable(report_03_11_2020)
+
+###Excercise 1
+report_03_12_2020 <- read.csv("~/Desktop/EvoGenomics-course/data/report_03_12_2020")
+report_09_12_2020 <- read.csv("~/Desktop/EvoGenomics-course/data/report_09_12_2020")
+
+
+
+```
+
+## 1
+The more recent files the country/region and Province/State has already been renamed. Also, in the more recent files there are more observations and variables
+
+```{r}
+
+## 2
+report_03_11_2020 %>% 
+  group_by(Country_Region) %>% 
+  summarise(Count = n())
+
+## 3
+report_03_11_2020 %>% 
+  filter(Country_Region == 'US') %>% 
+  group_by(Country_Region) %>% 
+  summarise(Count = n())
+
+## 4
+
+top_10_deaths_09_12 <- report_09_12_2020 %>% 
+  group_by(Country_Region) %>% 
+  summarise(deaths = sum(Deaths), cases = sum(Confirmed)) %>% 
+  arrange(desc(deaths)) %>% 
+  top_n(10)
+  
+top_10_deaths_03_12 <- report_03_12_2020 %>% 
+  group_by(Country_Region) %>% 
+  summarise(deaths = sum(Deaths), cases = sum(Confirmed)) %>% 
+  arrange(desc(deaths)) %>% 
+  top_n(10)
+
+### Exercises (Part 2)
+
+## for 03/12/2020
+top_10_deaths_03_12  %>% 
+  ggplot(aes(x = deaths,  y = Country_Region)) + 
+  geom_point()+
+  xlab("Deaths")+
+  ylab("Country")
+
+top_10_deaths_03_12  %>% 
+  ggplot(aes(x = cases,  y = Country_Region)) + 
+  geom_point()+
+  xlab("Cases")+
+  ylab("Country")
+
+## for 09/12/2020
+
+top_10_deaths_09_12  %>% 
+  ggplot(aes(x = deaths,  y = Country_Region)) + 
+  geom_point()+
+  xlab("Deaths")+
+  ylab("Country")
+
+top_10_deaths_09_12  %>% 
+  ggplot(aes(x = cases,  y = Country_Region)) + 
+  geom_point()+
+  xlab("Cases")+
+  ylab("Country")
+
+
+# Excercise Part 2 for states
+
+# top 10 states with most confirmed of cases 
+us_states_03_12 <- report_03_12_2020 %>% 
+  filter(Country_Region == 'US') %>%
+  arrange(desc(Confirmed))%>%
+  top_n(10)
+
+us_states_09_12 <- report_09_12_2020 %>% 
+  filter(Country_Region == 'US') %>%
+  arrange(desc(Confirmed))%>%
+  top_n(10)
+
+## for 03/12/2020
+us_states_03_12  %>% 
+  select(Province_State,Confirmed,Deaths) %>% 
+  ggplot(aes(x = Confirmed,  y = Province_State)) + 
+  geom_bar(stat = 'identity')
+
+us_states_03_12  %>% 
+  select(Province_State,Confirmed,Deaths) %>% 
+  ggplot(aes(x = Deaths,  y = Province_State)) + 
+  geom_bar(stat = 'identity')
+
+## for 09/12/2020
+us_states_09_12  %>% 
+  select(Province_State,Confirmed,Deaths) %>% 
+  ggplot(aes(x = Confirmed,  y = Province_State)) + 
+  geom_bar(stat = 'identity')
+
+us_states_09_12  %>% 
+  select(Province_State,Confirmed,Deaths) %>% 
+  ggplot(aes(x = Deaths,  y = Province_State)) + 
+  geom_bar(stat = 'identity')
+
+```
+
