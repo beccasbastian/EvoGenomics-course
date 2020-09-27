@@ -1,0 +1,85 @@
+---
+title: "Lab 4a"
+author: "Rebecca. Sebastian"
+date: "9/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Rebecca Lab 4a
+# Data visualization with ggplot2
+
+```{r}
+library(tidyverse)
+library(readr)
+library(hexbin)
+
+surveys_complete <- read_csv("data/portal_data_joined.csv")
+
+surveys_plot <- ggplot(data = surveys_complete,mapping = aes(x = weight, y = hindfoot_length)) 
+
+surveys_plot +
+  geom_point()
+
+surveys_plot +
+  geom_hex()
+
+#Challenge
+
+ggplot(data = surveys_complete, mapping = aes(y= weight, x = species_id))+
+  geom_point( aes(color = plot_type ))
+
+# No, it has little intutive value if you are interested in weights of different spp. Its better to 
+# color them by species id so its clearly visibile. At least this way you would see the range of 
+# weight for each species
+
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+  geom_jitter(alpha = 0.3, color = "tomato") +
+  geom_boxplot(alpha = 0) 
+
+#Challenges
+
+ggplot(data = surveys_complete, mapping = aes(y= weight, x = species_id))+
+  geom_violin()+
+  scale_y_log10()
+
+# Box plot for hindfoot_length
+
+ggplot(data = surveys_complete, mapping = aes(y= hindfoot_length, x = species_id))+
+  geom_jitter(alpha = 0.3, aes(color = plot_id))+
+  geom_boxplot()
+
+class(surveys_complete$plot_id) = "Factor"
+
+yearly_counts <- surveys_complete %>%
+  count(year, genus)
+
+#Challenge 
+
+yearly_weight <- surveys_complete %>%
+  group_by(year, species_id) %>%
+  summarize(avg_weight = mean(weight))
+
+ggplot(data = yearly_weight, mapping = aes(x=year, y=avg_weight)) +
+  geom_line() +
+  facet_wrap(vars(species_id)) +
+  theme_bw()
+
+#challange
+yearly_sex_counts <- surveys_complete %>%
+  count(year, genus, sex)
+
+ggplot(data = yearly_sex_counts, aes(x = year, y = n, color = sex)) +
+  geom_line(size= 1) +
+  facet_wrap(vars(genus)) +
+  labs(title = "Observed genera through time",
+       x = "Year of observation",
+       y = "Number of individuals") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+```
+
