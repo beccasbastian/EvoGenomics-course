@@ -23,6 +23,9 @@ LAB 3B: [Manipulating Data](Lab_3B.html)
 
 LAB 4: [Data Wrangling Part 1](Lab4.html)
 
+LAB 4A:[Data Visualization](Lab_4a.html)
+
+
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
 # REFERENCES
