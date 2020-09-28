@@ -25,7 +25,7 @@ LAB 4: [Data Wrangling Part 1](Lab4.html)
 
 LAB 4A: [Data Visualization](Lab_4a.html)
 
-LAB 5: [Data Wrangling and Graphing](Lab 5)
+LAB 5: [Data Wrangling and Graphing](Lab_5.html)
 
 
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
