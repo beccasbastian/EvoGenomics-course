@@ -27,6 +27,8 @@ LAB 4A: [Data Visualization](Lab_4a.html)
 
 LAB 5: [Data Wrangling and Graphing](Lab_5.html)
 
+LAB 5x: [Extra Lab](Lab5x.html)
+
 
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
