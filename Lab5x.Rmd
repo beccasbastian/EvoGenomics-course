@@ -1,0 +1,158 @@
+---
+title: "Lab5x"
+author: "Rebecca. Sebastian"
+date: "9/29/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE}
+library(tidyverse)
+library(readr)
+library(lubridate)
+library(plotly)
+library(gganimate)
+library(gifski)
+
+```
+
+```{r}
+## Loading Data
+
+time_series_confirmed_long <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")) %>%
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")  %>% 
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long),
+               names_to = "Date", values_to = "Confirmed") 
+# Let's get the times series data for deaths
+time_series_deaths_long <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv")) %>%
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")  %>% 
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long),
+               names_to = "Date", values_to = "Deaths")
+# Create Keys 
+time_series_confirmed_long <- time_series_confirmed_long %>% 
+  unite(Key, Province_State, Country_Region, Date, sep = ".", remove = FALSE)
+time_series_deaths_long <- time_series_deaths_long %>% 
+  unite(Key, Province_State, Country_Region, Date, sep = ".") %>% 
+  select(Key, Deaths)
+# Join tables
+time_series_long_joined <- full_join(time_series_confirmed_long,
+                                     time_series_deaths_long, by = c("Key")) %>% 
+  select(-Key)
+# Reformat the data
+time_series_long_joined$Date <- mdy(time_series_long_joined$Date)
+# Create Report table with counts
+time_series_long_joined_counts <- time_series_long_joined %>% 
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long, Date),
+               names_to = "Report_Type", values_to = "Counts")
+
+# Plot graph to a png outputfile
+
+ppi <- 300
+png("~/Desktop/EvoGenomics-course/data/time_series_example_plot.png", width=6*ppi, height=6*ppi, res=ppi)
+time_series_long_joined %>% 
+  group_by(Country_Region,Date) %>% 
+  summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+  filter (Country_Region == "US") %>% 
+  ggplot(aes(x = Date,  y = Deaths)) + 
+  geom_point() +
+  geom_line() +
+  ggtitle("US COVID-19 Deaths")
+dev.off()
+
+# Finding the 10 countries with most number of deaths all time
+top_10 <- time_series_long_joined %>% 
+  group_by(Country_Region) %>% 
+  summarise_at(c("Confirmed", "Deaths"), sum) %>%
+  arrange(desc(Deaths)) %>% 
+  top_n(10)
+
+# Subset the time series data to have 10 countries with most deaths
+  top_10_deaths <- time_series_long_joined %>% 
+    group_by(Country_Region,Date) %>% 
+    summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+    filter (Country_Region %in% c("US","Brazil","United Kingdom", 
+                                "Italy","Mexico", "India","France","Spain","Iran","Peru")) 
+# plotting the data
+ rb <-  ggplot(top_10_deaths, aes(x = Date,  y = Deaths, color = Country_Region)) + 
+  geom_point() +
+  geom_line() +
+  ggtitle("COVID-19 Deaths for 10 countries with the hightest death total")
+# Plot the graph using ggplotly
+ ggplotly(rb)
+dev.off()
+
+```
+
+# Challange 1
+
+```{r}
+png("~/Desktop/EvoGenomics-course/data/COVID_deaths_top10.png", width=3*ppi, height=3*ppi,res=ppi)
+time_series_long_joined %>% 
+  group_by(Country_Region,Date) %>% 
+  summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+  filter (Country_Region %in% c("US","Brazil","United Kingdom", 
+                                "Italy","Mexico", "India","France","Spain","Iran","Peru")) %>% 
+  ggplot(aes(x = Date,  y = Deaths, color = Country_Region)) + 
+  geom_point() +
+  geom_line() +
+  ggtitle("COVID-19 Deaths for 10 countries with the hightest death total")+
+  theme(legend.position = "bottom")
+dev.off()
+  
+```
+
+![COVID-19 Deaths for 10 countries with the hightest death total](data/COVID_deaths_top10.png)
+
+
+# Challange 2
+
+```{r}
+## Method 1
+ggplotly(
+time_series_long_joined %>% 
+  group_by(Date) %>% 
+  summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+  ggplot(aes(x = Date,  y = Deaths,))+ 
+  geom_point()+
+  geom_line()+
+  ggtitle("COVID-19 Deaths Per Day Worldwide")
+)
+
+## Method 2
+# subset of data
+deaths_worldwide <- time_series_long_joined %>% 
+  group_by(Date) %>% 
+  summarise_at(c("Confirmed", "Deaths"), sum)
+
+#collect layers 
+a <- ggplot(data=deaths_worldwide, aes(x = Date,  y = Deaths,))+ 
+  geom_point()+
+  geom_line()+
+  ggtitle("COVID-19 Deaths Per Day Worldwide")
+
+# Plot the graph using ggplotly
+ggplotly(a)
+```
+
+# Challange 3
+
+I want ot see, how the death toll rose in the countries which had most number of deaths with the time.
+
+```{r}
+## using the same plot used in the challange 1
+theme_set(theme_bw())
+
+rb_anim <-  ggplot(top_10_deaths, aes(x = Date,  y = Deaths, color = Country_Region)) + 
+  geom_point() +
+  geom_line() +
+  ggtitle("COVID-19 Deaths for 10 countries with the hightest death total")+
+  geom_point(aes(group = seq_along(Date))) +
+  transition_reveal(Date) 
+anim_save("anim_COVID_Deaths_10_most_countries",rb_anim)
+animate(rb_anim,renderer = gifski_renderer(), end_pause = 15)
+```
+
+
