@@ -29,6 +29,10 @@ LAB 5: [Data Wrangling and Graphing](Lab_5.html)
 
 LAB 5x: [Extra Lab](Lab5x.html)
 
+LAB 6: [Interactive Graphs and Animations](Lab6.html)
+
+LAB 6X: [R Shiny apps](Lab_6x.html)
+
 
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
