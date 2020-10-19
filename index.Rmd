@@ -33,6 +33,7 @@ LAB 6: [Interactive Graphs and Animations](Lab6.html)
 
 LAB 6X: [R Shiny apps](Lab_6x.html)
 
+LAB 7: [RNA-Seq workflow: gene-level exploratory analysis and DE](Lab-7.html)
 
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
