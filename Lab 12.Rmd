@@ -1,0 +1,31 @@
+---
+title: "Lab 12"
+author: "Rebecca. Sebastian"
+date: "11/30/2020"
+output: html_document
+---
+
+
+## Cytopscape graphs
+
+### Basic Data Visualization
+
+![Yeast data](images/Yeastimage.png)
+
+### Differentially Expressed Genes
+
+![STRING protein A](images/stringimage1.png)
+
+![STRING protein B](images/stringimage2.png)
+
+![STRING disease](images/stringimage4.png)
+
+
+## Ry3 Tutorial 
+
+### Data Frame example
+![](images/Untitled.png)
+
+### GraphNEL Example
+
+![](images/vignette_image.png)

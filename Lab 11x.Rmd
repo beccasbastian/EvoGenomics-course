@@ -1,0 +1,598 @@
+---
+title: "Lab 11x"
+author: "Rebecca. Sebastian"
+date: "12/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1. Ordination Plots
+```{r}
+## Load Pakages
+library("phyloseq"); packageVersion("phyloseq")
+data(GlobalPatterns)
+library("ggplot2"); packageVersion("ggplot2")
+library("plyr"); packageVersion("plyr")
+```
+```{r}
+theme_set(theme_bw())
+```
+
+## Prepare Data
+
+```{r}
+GP = GlobalPatterns
+wh0 = genefilter_sample(GP, filterfun_sample(function(x) x > 5), A=0.5*nsamples(GP))
+GP1 = prune_taxa(wh0, GP)
+```
+
+  
+```{r}
+GP1 = transform_sample_counts(GP1, function(x) 1E6 * x/sum(x))
+```
+  
+ 
+```{r}
+phylum.sum = tapply(taxa_sums(GP1), tax_table(GP1)[, "Phylum"], sum, na.rm=TRUE)
+top5phyla = names(sort(phylum.sum, TRUE))[1:5]
+GP1 = prune_taxa((tax_table(GP1)[, "Phylum"] %in% top5phyla), GP1)
+```
+
+   
+```{r}
+human = get_variable(GP1, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
+sample_data(GP1)$human <- factor(human)
+```
+
+## Four main ordination plots
+### (1) Just OTUs
+
+```{r}
+GP.ord <- ordinate(GP1, "NMDS", "bray")
+p1 = plot_ordination(GP1, GP.ord, type="taxa", color="Phylum", title="taxa")
+print(p1)
+```
+
+```{r}
+## facetting for better visual understanding of the data
+p1 + facet_wrap(~Phylum, 3)
+```
+
+### (2) Just samples
+
+
+```{r}
+p2 = plot_ordination(GP1, GP.ord, type="samples", color="SampleType", shape="human") 
+p2 + geom_polygon(aes(fill=SampleType)) + geom_point(size=5) + ggtitle("samples")
+```
+
+### (3) biplot graphic
+```{r}
+p3 = plot_ordination(GP1, GP.ord, type="biplot", color="SampleType", shape="Phylum", title="biplot")
+# Some stuff to modify the automatic shape scale
+GP1.shape.names = get_taxa_unique(GP1, "Phylum")
+GP1.shape <- 15:(15 + length(GP1.shape.names) - 1)
+names(GP1.shape) <- GP1.shape.names
+GP1.shape["samples"] <- 16
+p3 + scale_shape_manual(values=GP1.shape)
+```
+
+### (4) split graphic
+
+```{r}
+p4 = plot_ordination(GP1, GP.ord, type="split", color="Phylum", shape="human", label="SampleType", title="split") 
+p4
+```
+```{r}
+gg_color_hue <- function(n){
+    hues = seq(15, 375, length=n+1)
+    hcl(h=hues, l=65, c=100)[1:n]
+}
+color.names <- levels(p4$data$Phylum)
+p4cols <- gg_color_hue(length(color.names))
+names(p4cols) <- color.names
+p4cols["samples"] <- "black"
+p4 + scale_color_manual(values=p4cols)
+```
+
+## Supported Ordination Methods
+```{r}
+dist = "bray"
+ord_meths = c("DCA", "CCA", "RDA", "DPCoA", "NMDS", "MDS", "PCoA")
+plist = llply(as.list(ord_meths), function(i, physeq, dist){
+        ordi = ordinate(physeq, method=i, distance=dist)
+        plot_ordination(physeq, ordi, "samples", color="SampleType")
+}, GP1, dist)
+```
+```{r}
+names(plist) <- ord_meths
+```
+
+```{r}
+pdataframe = ldply(plist, function(x){
+    df = x$data[, 1:2]
+    colnames(df) = c("Axis_1", "Axis_2")
+    return(cbind(df, x$data))
+})
+names(pdataframe)[1] = "method"
+```
+
+```{r}
+p = ggplot(pdataframe, aes(Axis_1, Axis_2, color=SampleType, shape=human, fill=SampleType))
+p = p + geom_point(size=4) + geom_polygon()
+p = p + facet_wrap(~method, scales="free")
+p = p + scale_fill_brewer(type="qual", palette="Set1")
+p = p + scale_colour_brewer(type="qual", palette="Set1")
+p
+```
+
+
+```{r}
+plist[[2]] 
+```
+
+```{r}
+p = plist[[2]] + scale_colour_brewer(type="qual", palette="Set1")
+p = p + scale_fill_brewer(type="qual", palette="Set1")
+p = p + geom_point(size=5) + geom_polygon(aes(fill=SampleType))
+p
+```
+
+## MDS (“PCoA”) on Unifrac Distances
+```{r}
+ordu = ordinate(GP1, "PCoA", "unifrac", weighted=TRUE)
+plot_ordination(GP1, ordu, color="SampleType", shape="human")
+```
+
+```{r}
+p = plot_ordination(GP1, ordu, color="SampleType", shape="human")
+p = p + geom_point(size=7, alpha=0.75)
+p = p + scale_colour_brewer(type="qual", palette="Set1")
+p + ggtitle("MDS/PCoA on weighted-UniFrac distance, GlobalPatterns")
+```
+
+
+# 2. Alpha diversity graphics
+```{r}
+## Load packages
+library("phyloseq"); packageVersion("phyloseq")
+data("GlobalPatterns")
+library("ggplot2"); packageVersion("ggplot2")
+```
+
+```{r}
+## Set parameters
+theme_set(theme_bw())
+pal = "Set1"
+scale_colour_discrete <-  function(palname=pal, ...){
+  scale_colour_brewer(palette=palname, ...)
+}
+scale_fill_discrete <-  function(palname=pal, ...){
+  scale_fill_brewer(palette=palname, ...)
+}
+```
+
+## Prepare data
+```{r}
+GP <- prune_species(speciesSums(GlobalPatterns) > 0, GlobalPatterns)
+```
+
+## Plot 
+
+```{r}
+plot_richness(GP)
+```
+
+```{r}
+## specifying a 'measures' to include just the alpha-diversity measures that we want
+plot_richness(GP, measures=c("Chao1", "Shannon"))
+```
+
+```{r}
+## specify a sample variable on which to group/organize samples along the horizontal (x) axis
+plot_richness(GP, x="SampleType", measures=c("Chao1", "Shannon"))
+```
+
+```{r}
+sampleData(GP)$human <- getVariable(GP, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
+```
+
+```{r}
+plot_richness(GP, x="human", color="SampleType", measures=c("Chao1", "Shannon"))
+```
+
+
+```{r}
+## merge samples
+GPst = merge_samples(GP, "SampleType")
+# repair variables that were damaged during merge (coerced to numeric)
+sample_data(GPst)$SampleType <- factor(sample_names(GPst))
+sample_data(GPst)$human <- as.logical(sample_data(GPst)$human)
+```
+
+```{r}
+##  plot the environment-merged version of the data
+p = plot_richness(GPst, x="human", color="SampleType", measures=c("Chao1", "Shannon"))
+p + geom_point(size=4, alpha=0.7)
+```
+
+
+## More details about ggplot2
+
+```{r}
+p$layers
+```
+```{r}
+p$layers <- p$layers[-1]
+p + geom_point(size=5, alpha=0.7)
+```
+
+# 3. Heatmap Plots
+  
+```{r}
+#Load Packages, Data
+library("phyloseq"); packageVersion("phyloseq")
+library("ggplot2"); packageVersion("ggplot2")
+theme_set(theme_bw())
+
+```
+
+## Plot a 300-taxa dataset
+```{r}
+data("GlobalPatterns")
+gpt <- subset_taxa(GlobalPatterns, Kingdom=="Bacteria")
+gpt <- prune_taxa(names(sort(taxa_sums(gpt),TRUE)[1:300]), gpt)
+plot_heatmap(gpt, sample.label="SampleType")
+```
+
+## Subset a smaller dataset based on an Archaeal phylum
+```{r}
+gpac <- subset_taxa(GlobalPatterns, Phylum=="Crenarchaeota")
+```
+
+## Default plot setting
+```{r}
+plot_heatmap(gpac)
+```
+
+
+## Re-label by a sample variable and taxonomic family
+```{r}
+(p <- plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family"))
+```
+
+## Re-label axis titles
+```{r}
+p$scales$scales[[1]]$name <- "My X-Axis"
+p$scales$scales[[2]]$name <- "My Y-Axis"
+print(p)
+```
+
+## Now repeat the plot, but change the color scheme.
+```{r}
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#000033", high="#CCFF66")
+```
+
+```{r}
+## dark-blue to red scheme
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#000033", high="#FF3300")
+```
+
+```{r}
+## A very dark-blue to very light-blue scheme
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#000033", high="#66CCFF")
+```
+
+```{r}
+## “dark on light” color scheme
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#66CCFF", high="#000033", na.value="white")
+```
+
+```{r}
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#FFFFCC", high="#000033", na.value="white")
+```
+
+## Now try different ordination methods, distances
+
+```{r}
+##  NMDS ordination on the jaccard distance
+plot_heatmap(gpac, "NMDS", "jaccard")
+```
+
+```{r}
+## Detrended correspondence analysis
+plot_heatmap(gpac, "DCA", "none", "SampleType", "Family")
+```
+
+```{r}
+## Unconstrained redundancy analysis (Principle Components Analysis, PCA)
+plot_heatmap(gpac, "RDA", "none", "SampleType", "Family")
+```
+
+```{r}
+## PCoA/MDS ordination on the (default) bray-curtis distance
+plot_heatmap(gpac, "PCoA", "bray", "SampleType", "Family")
+```
+
+```{r}
+## MDS/PCoA ordination on the Unweighted-UniFrac distance
+plot_heatmap(gpac, "PCoA", "unifrac", "SampleType", "Family")
+```
+
+```{r}
+## Weighted-UniFrac distance and MDS/PCoA ordination
+plot_heatmap(gpac, "MDS", "unifrac", "SampleType", "Family", weighted=TRUE)
+```
+
+```{r}
+## Create a heatmap using base-R graphics and the more common hierarchical clustering organization
+heatmap(otu_table(gpac))
+```
+
+# 4. Plot Microbiome Network
+
+```{r}
+## Load Package and Example Data
+library(phyloseq); packageVersion("phyloseq")
+packageVersion("ggplot2")
+data(enterotype)
+```
+
+```{r}
+## set the random number generator seed explicitly
+set.seed(711L)
+```
+
+   
+```{r}
+ enterotype = subset_samples(enterotype, !is.na(Enterotype))
+```
+
+## The plot_net function
+
+```{r}
+## The default setting
+plot_net(enterotype, maxdist = 0.4, point_label = "Sample_ID")
+```
+
+
+
+# 5. Powerful tree graphics with ggplot2
+```{r}
+## Load the package and datasets
+library("phyloseq")
+data("esophagus")
+data("GlobalPatterns")
+
+packageVersion("phyloseq")
+
+library("ggplot2"); packageVersion("ggplot2")
+```
+
+```{r}
+head(phy_tree(GlobalPatterns)$node.label, 10)
+
+phy_tree(GlobalPatterns)$node.label = substr(phy_tree(GlobalPatterns)$node.label, 1, 4)
+
+ntaxa(GlobalPatterns)
+
+physeq = prune_taxa(taxa_names(GlobalPatterns)[1:50], GlobalPatterns)
+```
+
+```{r}
+plot_tree(physeq)
+```
+
+```{r}
+## no sample points next to the tips
+plot_tree(physeq, "treeonly")
+```
+
+```{r}
+##  no node labels 
+plot_tree(physeq, "treeonly", nodeplotblank)
+```
+
+```{r}
+## ladderize parameter
+plot_tree(physeq, "treeonly", nodeplotblank, ladderize="left")
+```
+
+```{r}
+plot_tree(physeq, "treeonly", nodeplotblank, ladderize=TRUE)
+```
+
+```{r}
+## add the OTU labels next to each tip
+plot_tree(physeq, nodelabf=nodeplotblank, label.tips="taxa_names", ladderize="left")
+```
+
+```{r}
+## no dodged sample points next to the tips
+plot_tree(physeq, "anythingelse")
+```
+
+## Mapping Variables in Data
+
+### Color
+```{r}
+## map color to the type of sample collected (environmental location)
+plot_tree(physeq, nodelabf=nodeplotboot(), ladderize="left", color="SampleType")
+## map color to taxonomic class
+plot_tree(physeq, nodelabf=nodeplotboot(), ladderize="left", color="Class")
+```
+
+### Shape
+```{r}
+plot_tree(physeq, nodelabf=nodeplotboot(), ladderize="left", color="SampleType", shape="Class")
+```
+
+### Node labels
+```{r}
+# The default
+plot_tree(physeq, color="SampleType", ladderize="left")
+```
+
+```{r}
+# Special bootstrap label
+plot_tree(physeq, nodelabf=nodeplotboot(), color="SampleType", ladderize="left")
+```
+
+```{r}
+# Special bootstrap label with alternative thresholds
+plot_tree(physeq, nodelabf=nodeplotboot(80,0,3), color="SampleType", ladderize="left")
+```
+
+```{r}
+plot_tree(physeq, nodelabf=nodeplotboot(80,0,3), color="SampleType", label.tips="taxa_names", ladderize="left")
+```
+
+## Radial Tree
+```{r}
+data(esophagus)
+plot_tree(esophagus, color="Sample", ladderize="left") + coord_polar(theta="y")
+```
+
+```{r}
+plot_tree(physeq, nodelabf=nodeplotboot(60,60,3), color="SampleType", shape="Class", ladderize="left") + coord_polar(theta="y")
+```
+
+## The esophagus dataset
+```{r}
+plot_tree(esophagus, title="Default tree.")
+```
+
+```{r}
+plot_tree(esophagus, "treeonly", title="method = \"treeonly\"")
+
+```
+
+```{r}
+plot_tree(esophagus, color="samples")
+```
+
+```{r}
+plot_tree(esophagus, size="abundance")
+```
+
+```{r}
+plot_tree(esophagus, size="abundance", color="samples")
+```
+
+```{r}
+plot_tree(esophagus, size="abundance", color="samples", base.spacing=0.03)
+```
+
+```{r}
+plot_tree(esophagus, size="abundance", color="samples", base.spacing=0.03, min.abundance=3)
+```
+
+## More Examples with the Global Patterns dataset
+```{r}
+gpa <- subset_taxa(GlobalPatterns, Kingdom=="Archaea")
+
+ntaxa(gpa)
+```
+
+```{r}
+ntaxa(GlobalPatterns)
+```
+
+```{r}
+plot_tree(gpa, color="SampleType")
+plot_tree(gpa, color="Phylum")
+plot_tree(gpa, color="SampleType", shape="Phylum")
+plot_tree(gpa, color="Phylum", label.tips="Genus")
+```
+
+```{r}
+gpac <- subset_taxa(gpa, Phylum=="Crenarchaeota")
+plot_tree(gpac, color="SampleType", shape="Genus")
+```
+
+```{r}
+plot_tree(gpac, color="SampleType", label.tips="Genus")
+```
+
+```{r}
+plot_tree(gpac, color="SampleType", shape="Genus", size="abundance", plot.margin=0.4)
+```
+
+```{r}
+plot_tree(gpac, nodelabf=nodeplotblank, color="SampleType", shape="Genus", size="abundance", base.spacing=0.04, plot.margin=0.4)
+```
+
+## Chlamydiae-only tree
+```{r}
+GP.chl <- subset_taxa(GlobalPatterns, Phylum=="Chlamydiae")
+plot_tree(GP.chl, color="SampleType", shape="Family", label.tips="Genus", size="abundance", plot.margin=0.6)
+```
+
+# 6. Powerful, flexible phyloseq bar plots
+
+```{r}
+## load packages
+library("phyloseq"); packageVersion("phyloseq")
+library("ggplot2"); packageVersion("ggplot2")
+theme_set(theme_bw())
+```
+
+```{r}
+## load dataset
+data("GlobalPatterns")
+gp.ch = subset_taxa(GlobalPatterns, Phylum == "Chlamydiae")
+```
+
+## Some initial basic plots
+```{r}
+plot_bar(gp.ch)
+```
+
+```{r}
+plot_bar(gp.ch, fill="Genus")
+```
+
+```{r}
+plot_bar(gp.ch, x="SampleType", fill="Genus")
+```
+
+## More Sophisticated Organization using Facets
+```{r}
+plot_bar(gp.ch, "Family", fill="Genus", facet_grid=~SampleType)
+```
+
+## Further customization using ggplot2 layers
+```{r}
+library("ggplot2")
+p = plot_bar(gp.ch, "Family", fill="Genus", facet_grid=~SampleType)
+p + geom_point(aes(x=Family, y=Abundance), color="black", position="jitter", size=3)
+```
+## Enterotypes dataset examples
+```{r}
+## load package and trim Enterotype data to most abundant 10 genera
+library("phyloseq")
+data("enterotype")
+TopNOTUs <- names(sort(taxa_sums(enterotype), TRUE)[1:10])
+ent10   <- prune_species(TopNOTUs, enterotype)
+```
+
+```{r}
+plot_bar(ent10, "SeqTech", fill="Enterotype", facet_grid=~Genus)
+```
+
+```{r}
+plot_bar(ent10, "Genus", fill="Genus", facet_grid=SeqTech~Enterotype)
+```
+
+## Add ggplot2 layer to remove the OTU separation lines
+
+```{r}
+library("ggplot2")
+
+p = plot_bar(ent10, "Genus", fill="Genus", facet_grid=SeqTech~Enterotype)
+p + geom_bar(aes(color=Genus, fill=Genus), stat="identity", position="stack")
+```
+
