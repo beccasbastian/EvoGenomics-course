@@ -1,0 +1,241 @@
+---
+title: "Lab 8"
+author: "Rebecca Sebastian"
+date: "12/4/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Sequence Alignment, Phylogenetic Analysis and Tree Visualization
+
+## Exercise: Use NGPhylogeny.fr to analyze the set of rRNA sequence provided and put the .png file from your analysis.
+```{r}
+library(knitr)
+library(png)
+```
+
+![Tree of life](data/tree.png)
+
+
+# Phylogenetic Analysis (tree building) on CIPRES
+
+## Exercise: Align and do phylogenetic analysis off the sequences in CIPRES using MAFFT and FastTreeMP.
+
+#### To view the TOL_output.mafft MSA click [here](https://www.ebi.ac.uk/Tools/services/rest/mview/result/mview-I20201124-194908-0211-81171777-p1m/aln-html).
+
+
+
+# ggtree tutorial
+
+```{r, echo=FALSE, eval=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("ggtree")
+BiocManager::install("ggimage")
+```
+
+
+```{r}
+library(tidyverse)
+library(ggtree)
+# added treeio and ggimage library
+library(treeio)
+library(ggimage)
+# need to install libmagick 
+# sudo apt-get install libmagick++-dev
+```
+
+## Basic trees
+
+```{r}
+tree <- read.tree("data/tree_newick.nwk")
+tree
+```
+
+```{r}
+# build a ggplot with a geom_tree
+ggplot(tree) + geom_tree() + theme_tree()
+# This is convenient shorthand
+ggtree(tree)
+```
+
+```{r}
+# add a scale
+ggtree(tree) + geom_treescale()
+# or add the entire scale to the x axis with theme_tree2()
+ggtree(tree) + theme_tree2()
+```
+
+```{r}
+# disable scaling to produce a cladogram
+ggtree(tree, branch.length="none")
+```
+```{r}
+# drawing cladogram (no branch scaling) with aesthetics of the plot
+ggtree(tree, branch.length="none", color="blue", size=2, linetype=3)
+```
+
+### Exercise 1
+
+1. Create a slanted phylogenetic tree.
+```{r}
+ggtree(tree, layout="slanted") + ggtitle("Slanted phylogenetic tree")
+```
+
+2. Create a circular phylogenetic tree.
+```{r}
+ggtree(tree, layout="circular") + ggtitle("Circular phylogenetic tree")
+```
+
+3. Create a circular unscaled cladogram with thick red lines.
+```{r}
+ggtree(tree, layout="circular", branch.length="none", color="red", size=2, linetype=1)
+```
+
+### Exercise 2
+
+```{r}
+ggtree(tree) + geom_tiplab(size=4, color="purple") + geom_nodepoint(color="yellow", alpha=1/2, size=3) + geom_tippoint(color="purple", shape=18, size=2)+ ggtitle("Exercise 2 phylogenetic tree")
+```
+
+## Tree annotation
+
+```{r}
+# Internal node number
+ggtree(tree) + geom_text(aes(label=node), hjust=-.3)
+```
+
+```{r}
+ggtree(tree) + geom_tiplab()
+
+# get the internal node numbers
+MRCA(tree, c("C", "E"))
+MRCA(tree, c("G", "H"))
+```
+
+```{r}
+# Labeling clades
+ggtree(tree) + 
+  geom_tiplab() + 
+  geom_cladelabel(node=17, label="Some random clade", 
+                  color="red2", offset=.8, align=TRUE) + 
+  geom_cladelabel(node=21, label="A different clade", 
+                  color="blue", offset=.8, align=TRUE) + 
+  theme_tree2() + 
+  xlim(0, 70) + 
+  theme_tree()
+```
+
+```{r}
+# Highlight the entire clade
+ggtree(tree) + 
+  geom_tiplab() + 
+  geom_hilight(node=17, fill="gold") + 
+  geom_hilight(node=21, fill="purple")
+```
+
+```{r}
+# Connecting taxa
+ggtree(tree) + 
+  geom_tiplab() + 
+  geom_taxalink("E", "H", color="blue3") +
+  geom_taxalink("C", "G", color="orange2", curvature=-.9)
+```
+
+### ggrtree Tutorial Exercise 3
+
+```{r}
+MRCA(tree, c("B", "C"))
+MRCA(tree, c("L", "J"))
+```
+
+```{r}
+ggtree(tree) + 
+  geom_tiplab() + 
+  geom_hilight(node=19, fill="lavender") + 
+  geom_hilight(node=23, fill="pink") + 
+  geom_cladelabel(node=17, label="Superclade 17", 
+                  color="red2", offset=-7, align=TRUE) + 
+  geom_taxalink("C", "E", linetype=2) +
+  geom_taxalink("G", "J", linetype=2) + 
+  theme_tree2() + 
+  ggtitle("Exercise 3 Phylogenetic Tree")
+```
+
+```{r}
+ggtree(tree, layout = 'circular') + geom_tiplab() + 
+geom_hilight(node=19, fill="lavender") + 
+geom_hilight(node=23, fill="pink") + 
+  geom_cladelabel(node=19, label="Clade 19", 
+                  color="blue", offset=.8, align=TRUE) + 
+  geom_cladelabel(node=23, label="Clade 23", 
+                  color="blue", offset=.8, align=TRUE) + theme_tree2() + 
+  ggtitle("Exercise 3 Circular Phylogenetic Tree")
+```
+
+
+## Advanced tree annotation
+```{r}
+# Read the data
+tree <- read.beast("data/flu_tree_beast.tree")
+# supply a most recent sampling date so you get the dates
+# and add a scale bar
+ggtree(tree, mrsd="2013-01-01") + 
+  theme_tree2() 
+# Finally, add tip labels and adjust axis
+ggtree(tree, mrsd="2013-01-01") + 
+  theme_tree2() + 
+  geom_tiplab(align=TRUE, linesize=.5) + 
+  xlim(1990, 2020)
+```
+
+```{r}
+msaplot(p=ggtree(tree), fasta="data/flu_aasequence.fasta", window=c(150, 175))
+```
+
+```{r}
+msaplot(p=ggtree(tree), fasta="data/flu_aasequence.fasta", window=c(150, 175)) + 
+  coord_polar(theta = "y")
+```
+
+```{r}
+set.seed(42)
+trees <- lapply(rep(c(10, 25, 50, 100), 3), rtree)
+class(trees) <- "multiPhylo"
+ggtree(trees) + facet_wrap(~.id, scale="free", ncol=4) + ggtitle("Many trees. Such phylogenetics. Wow.")
+```
+
+## Exercise: Uploade tree file from the FastTreeMP output on CIPRES using treeio.
+```{r}
+MyTree <- read.tree("data/TOL_fastree_result.tre")
+
+ggtree(MyTree)+
+  geom_nodelab() + geom_tiplab(hjust=-.1, size = 3) + xlim(0,2)+
+  geom_hilight(node=30, fill="green", extend = 0.5) +
+  geom_hilight(node=25, fill="blue", extend = 0.5)
+```
+
+```{r}
+MyTree <- read.tree("data/TOL_fastree_result.tre")
+
+ggtree(MyTree) + geom_text(aes(label=node), hjust=-.1)
+
+ggtree(MyTree)+
+  geom_nodelab() + geom_tiplab(hjust=-.1, size = 3) + xlim(0,2)+
+  geom_hilight(node=30, fill="pink", extend = 0.5) +
+  geom_hilight(node=25, fill="grey", extend = 0.5) +
+  geom_hilight(node=37, fill="light blue", extend = 0.5) +
+  geom_cladelabel(node=30, label="Bacteria", 
+                  color="pink", offset=.8, align=TRUE) + 
+  geom_cladelabel(node=25, label="Eukarya", 
+                  color="purple", offset=.8, align=TRUE) + 
+  geom_cladelabel(node=37, label="Archaea", 
+                  color="lavender", offset=.8, align=TRUE)
+```
+
+
+    

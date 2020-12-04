@@ -1,0 +1,165 @@
+---
+title: "Lab 9x"
+author: "Rebecca. Sebastian"
+output: html_document
+---
+
+## Example of if-else statement
+
+```{r}
+x <- runif(1, 0, 100)  
+if(x > 5) {
+        y <- 100
+} else {
+        y <- 0
+}
+```
+
+```{r}
+x <- 10
+if (x < 0) {
+print("-")
+} else if (x > 0) {
+print("+")
+} else
+print("Zero")
+```
+
+## Loops
+```{r}
+for(i in 1:5) {
+        print(i)
+}
+```
+
+```{r}
+x <- c("x", "b", "r", "l", "e")
+for(i in 2:4) {
+        ## Print out each element of 'x'
+        print(x[i])  
+}
+```
+
+```{r}
+## Generate a sequence based on length of 'x'
+for(i in seq_along(x)) {   
+        print(x[i])
+}
+```
+
+```{r}
+for(letter in x) {
+        print(letter)
+}
+
+```
+
+```{r}
+## One line loops
+for(i in 2:5) print(x[i])
+```
+
+## Nested for loops
+
+```{r}
+x <- matrix(1:6, 2, 3)
+for(i in seq_len(nrow(x))) {
+        for(j in seq_len(ncol(x))) {
+                print(x[i, j])
+        }   
+}
+```
+
+
+
+## while loops
+```{r}
+count <- 0
+while(count > -10) {
+        print(count)
+        count <- count - 2
+}
+```
+
+```{r}
+z <- 5
+set.seed(1)
+while(z >= 3 && z <= 10) {
+        coin <- rbinom(1, 1, 0.5)
+        
+        if(coin == 1) {  ## random walk
+                z <- z + 1
+        } else {
+                z <- z - 1
+        } 
+}
+print(z)
+```
+
+## Functions
+
+```{r}
+f <- function() {
+        ## This is an empty function
+}
+## Functions have their own class
+class(f)  
+```
+
+```{r}
+## Execute this function
+f()
+```
+
+```{r}
+f <- function() {
+        cat("Hello, world!\n")
+}
+f()
+```
+
+```{r}
+f <- function(num) {
+        for(i in seq_len(num)) {
+                cat("Hello, world!\n")
+        }
+}
+f(4)
+```
+
+```{r}
+f <- function(num) {
+        hello <- "Hello, world!\n"
+        for(i in seq_len(num)) {
+                cat(hello)
+        }
+        chars <- nchar(hello) * num
+        chars
+}
+meaningoflife <- f(4)
+```
+
+```{r}
+print(meaningoflife)
+```
+
+```{r}
+f <- function(num = 1) {
+        hello <- "Hello, world!\n"
+        for(i in seq_len(num)) {
+                cat(hello)
+        }
+        chars <- nchar(hello) * num
+        chars
+}
+f()    ## Use default value for 'num'
+```
+
+```{r}
+f(3)   ## Use user-specified value
+```
+
+```{r}
+f(num = 3)
+```
+

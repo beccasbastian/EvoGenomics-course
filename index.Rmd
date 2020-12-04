@@ -35,7 +35,7 @@ LAB 6X: [R Shiny apps](Lab_6x.html)
 
 LAB 7: [RNA-Seq workflow: gene-level exploratory analysis and DE](Lab-7.html)
 
-LAB 8: [Tree Visualization using ggtree]
+LAB 8: [Tree Visualization using ggtree](Lab-8.html)
 
 LAB 9: [R-Regular Expressions](Lab-9.html)
 
